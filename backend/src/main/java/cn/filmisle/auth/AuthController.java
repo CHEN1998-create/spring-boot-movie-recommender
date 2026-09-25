@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 认证接口：POST /api/auth/register、POST /api/auth/login、GET /api/auth/me。
- * 前端持有 JWT（Authorization: Bearer），X-User-Id 演示机制逐步退役。
+ * 前端持有 JWT（Authorization: Bearer），X-User-Id 演示头已全面退役。
  */
 @RestController
 @RequestMapping("/api/auth")

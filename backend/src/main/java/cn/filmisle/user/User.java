@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 
 /**
  * 用户实体（PRD users 表）。
- * 说明：登录模块未上线，本阶段仅承载"演示身份"——
- * behavior 接口通过 X-User-Id 请求头识别用户，未传时落到演示用户。
- * passwordHash 字段为 auth 模块预留。
+ * 认证：JWT（Authorization: Bearer）由 cn.filmisle.auth 模块校验；
+ * 未登录请求由 CurrentUserResolver 回落到演示用户。
+ * passwordHash 为 BCrypt 散列，注册/登录时写入与校验。
  */
 @Entity
 @Table(name = "users")

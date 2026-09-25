@@ -13,7 +13,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** 401 未认证（X-User-Id 指向的用户不存在 / 已失效） */
+    /** 401 未认证（JWT 无效 / 过期 / 用户不存在，或登录密码错误） */
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
         return body(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
