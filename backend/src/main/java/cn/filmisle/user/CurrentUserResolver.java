@@ -1,6 +1,7 @@
 package cn.filmisle.user;
 
 import cn.filmisle.common.UnauthorizedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -17,11 +18,14 @@ public class CurrentUserResolver {
 
     public static final String USER_HEADER = "X-User-Id";
     public static final String DEMO_EMAIL = "demo@filmisle.cn";
+    public static final String DEMO_DEFAULT_PASSWORD = "demo123456";
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public CurrentUserResolver(UserRepository userRepository) {
+    public CurrentUserResolver(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -40,8 +44,11 @@ public class CurrentUserResolver {
     }
 
     /** 演示用户：种子数据写入行为记录的归属者，懒创建保证单库可重复初始化 */
-    private User demoUser() {
-        return userRepository.findByEmail(DEMO_EMAIL).orElseGet(() ->
-                userRepository.save(new User(DEMO_EMAIL, "陈屿", User.ROLE_ADMIN, LocalDateTime.now())));
+    public User demoUser() {
+        return userRepository.findByEmail(DEMO_EMAIL).orElseGet(() -> {
+            User demo = new User(DEMO_EMAIL, "陈屿", User.ROLE_ADMIN, LocalDateTime.now());
+            demo.setPasswordHash(passwordEncoder.encode(DEMO_DEFAULT_PASSWORD));
+            return userRepository.save(demo);
+        });
     }
 }

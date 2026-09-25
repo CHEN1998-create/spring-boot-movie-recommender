@@ -29,6 +29,11 @@ spring:
 server:
   port: 8080
 
+# JWT 认证：secret 演示环境用默认值，部署时用环境变量 JWT_SECRET 覆盖
+jwt:
+  secret: ${JWT_SECRET:filmisle-demo-secret-key-change-me-in-production-0123456789}
+  expire-hours: 168
+
 logging:
   level:
     cn.filmisle: info

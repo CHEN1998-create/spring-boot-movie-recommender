@@ -8,6 +8,7 @@ import cn.filmisle.user.User;
 import cn.filmisle.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -27,13 +28,16 @@ public class BehaviorSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final RatingRepository ratingRepository;
     private final FavoriteRepository favoriteRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public BehaviorSeeder(UserRepository userRepository,
                           RatingRepository ratingRepository,
-                          FavoriteRepository favoriteRepository) {
+                          FavoriteRepository favoriteRepository,
+                          PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.ratingRepository = ratingRepository;
         this.favoriteRepository = favoriteRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -41,6 +45,11 @@ public class BehaviorSeeder implements CommandLineRunner {
         User demo = userRepository.findByEmail("demo@filmisle.cn").orElseGet(() ->
                 userRepository.save(new User("demo@filmisle.cn", "陈屿", User.ROLE_ADMIN,
                         LocalDateTime.of(2026, 3, 1, 12, 0))));
+        // auth 模块：演示用户补齐默认密码 demo123456（幂等，兼容旧库升级）
+        if (demo.getPasswordHash() == null) {
+            demo.setPasswordHash(passwordEncoder.encode(cn.filmisle.user.CurrentUserResolver.DEMO_DEFAULT_PASSWORD));
+            userRepository.save(demo);
+        }
 
         if (ratingRepository.count() == 0) {
             // [movieId, score, 月, 日, 时, 分]（与前端 myRatings 同源）

@@ -31,6 +31,12 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
+    /** 409 资源冲突（注册邮箱已存在等） */
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
+        return body(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
     /** 400 参数校验失败 */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
