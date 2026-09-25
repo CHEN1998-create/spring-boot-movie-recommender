@@ -13,8 +13,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,11 +133,8 @@ public class MovieService {
         return value == null || value.isBlank() ? fallback : value.trim();
     }
 
-    /** 占位海报：与前端相同的文生图服务按片名生成 */
+    /** 占位海报：本地静态资源通用占位图 */
     private String placeholderPoster(String title) {
-        String prompt = URLEncoder.encode(
-                title + " cinematic movie poster, portrait composition, dramatic lighting, film grain",
-                StandardCharsets.UTF_8);
-        return "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=" + prompt + "&image_size=portrait_4_3";
+        return "/posters/placeholder.jpg";
     }
 }

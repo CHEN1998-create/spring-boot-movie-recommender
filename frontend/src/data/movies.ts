@@ -1,21 +1,12 @@
 import type { Movie } from '../types'
 
 /**
- * 海报图：使用平台文生图服务按主题生成，骨架阶段无需本地素材。
- * 后续接接口时替换为后端返回的 poster_url 即可。
+ * 海报图：本地静态资源（frontend/public/posters/），与后端种子数据共用同一套图片。
  */
-const poster = (prompt: string) =>
-  `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(
-    prompt + ', cinematic movie poster, portrait composition, dramatic lighting, film grain',
-  )}&image_size=portrait_4_3`
+const poster = (n: number) => `/posters/poster-${n}.jpg`
 
 /** 首页主视觉背景 */
-export const heroBackdrop =
-  'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=' +
-  encodeURIComponent(
-    'dark cinematic film festival backdrop, moody theater with projector light beam and floating dust, deep navy and amber tones, wide',
-  ) +
-  '&image_size=landscape_16_9'
+export const heroBackdrop = '/posters/hero-backdrop.jpg'
 
 export const ALL_TAGS = [
   '科幻', '悬疑', '剧情', '动画', '喜剧', '爱情', '犯罪', '冒险', '奇幻', '动作', '灾难', '传记', '文艺', '惊悚', '历史',
@@ -36,7 +27,7 @@ export const movies: Movie[] = [
     tags: ['科幻', '冒险', '剧情'],
     rating: 9.4,
     ratingCount: 12846,
-    posterUrl: poster('epic sci-fi movie poster, astronaut standing before a giant black hole with glowing accretion disk, vast space'),
+    posterUrl: poster(1),
     createdAt: '2026-03-02 10:24',
   },
   {
@@ -53,7 +44,7 @@ export const movies: Movie[] = [
     tags: ['科幻', '悬疑', '动作'],
     rating: 9.3,
     ratingCount: 15602,
-    posterUrl: poster('surreal movie poster, city skyline folding like paper above mirror street, dream layers, deep blue tones'),
+    posterUrl: poster(2),
     createdAt: '2026-03-02 10:31',
   },
   {
@@ -70,7 +61,7 @@ export const movies: Movie[] = [
     tags: ['动画', '奇幻', '冒险'],
     rating: 9.4,
     ratingCount: 18234,
-    posterUrl: poster('whimsical anime movie poster, little girl on a lantern-lit boat crossing a night sea, floating spirits, warm glow'),
+    posterUrl: poster(3),
     createdAt: '2026-03-02 11:02',
   },
   {
@@ -87,7 +78,7 @@ export const movies: Movie[] = [
     tags: ['剧情', '悬疑', '惊悚'],
     rating: 8.8,
     ratingCount: 11987,
-    posterUrl: poster('dark satire movie poster, modern glass house on a hill half sunk into ground, moody rainy night'),
+    posterUrl: poster(4),
     createdAt: '2026-03-05 09:12',
   },
   {
@@ -104,7 +95,7 @@ export const movies: Movie[] = [
     tags: ['科幻', '灾难', '剧情'],
     rating: 8.0,
     ratingCount: 9876,
-    posterUrl: poster('sci-fi disaster movie poster, colossal planetary engines pushing planet earth, frozen city skyline, epic scale'),
+    posterUrl: poster(5),
     createdAt: '2026-03-05 09:20',
   },
   {
@@ -121,7 +112,7 @@ export const movies: Movie[] = [
     tags: ['剧情', '犯罪'],
     rating: 9.7,
     ratingCount: 23150,
-    posterUrl: poster('hopeful drama movie poster, man in prison uniform raising arms in rain under stone walls, dramatic breaking storm sky'),
+    posterUrl: poster(6),
     createdAt: '2026-03-08 14:45',
   },
   {
@@ -138,7 +129,7 @@ export const movies: Movie[] = [
     tags: ['剧情', '喜剧', '历史'],
     rating: 9.0,
     ratingCount: 13421,
-    posterUrl: poster('stylized vintage movie poster, steam train and horses racing along mountain railway at sunset, bold graphic colors'),
+    posterUrl: poster(7),
     createdAt: '2026-03-10 16:08',
   },
   {
@@ -155,7 +146,7 @@ export const movies: Movie[] = [
     tags: ['动画', '喜剧', '冒险'],
     rating: 9.2,
     ratingCount: 15023,
-    posterUrl: poster('colorful animation movie poster, cheerful rabbit police officer in a vibrant animal metropolis, sunny sky'),
+    posterUrl: poster(8),
     createdAt: '2026-03-12 10:55',
   },
   {
@@ -172,7 +163,7 @@ export const movies: Movie[] = [
     tags: ['科幻', '冒险', '动作'],
     rating: 8.5,
     ratingCount: 8764,
-    posterUrl: poster('neon cyberpunk movie poster, avatar with VR goggles racing futuristic cars through digital city, pop culture montage'),
+    posterUrl: poster(9),
     createdAt: '2026-03-15 11:30',
   },
   {
@@ -189,7 +180,7 @@ export const movies: Movie[] = [
     tags: ['剧情', '文艺'],
     rating: 8.4,
     ratingCount: 5432,
-    posterUrl: poster('minimal arthouse movie poster, two farmers standing in a golden wheat field at dusk, muted earth tones, quiet'),
+    posterUrl: poster(10),
     createdAt: '2026-03-18 15:40',
   },
   {
@@ -206,7 +197,7 @@ export const movies: Movie[] = [
     tags: ['科幻', '冒险'],
     rating: 8.2,
     ratingCount: 9210,
-    posterUrl: poster('desert epic movie poster, cloaked figure standing on vast sand dune, giant worm shadow beneath, orange sun'),
+    posterUrl: poster(11),
     createdAt: '2026-03-20 09:05',
   },
   {
@@ -223,7 +214,7 @@ export const movies: Movie[] = [
     tags: ['剧情', '喜剧', '冒险'],
     rating: 8.6,
     ratingCount: 7654,
-    posterUrl: poster('adventure movie poster, man longboarding down an empty mountain road, paper plane flying overhead, bright clean light'),
+    posterUrl: poster(12),
     createdAt: '2026-03-22 13:18',
   },
   {
@@ -240,7 +231,7 @@ export const movies: Movie[] = [
     tags: ['悬疑', '惊悚', '犯罪'],
     rating: 8.8,
     ratingCount: 10234,
-    posterUrl: poster('dark thriller movie poster, silhouetted lawyer behind rainy window with reflections, scattered photographs, cold light'),
+    posterUrl: poster(13),
     createdAt: '2026-03-25 17:26',
   },
   {
@@ -257,7 +248,7 @@ export const movies: Movie[] = [
     tags: ['剧情', '喜剧', '爱情'],
     rating: 9.1,
     ratingCount: 14520,
-    posterUrl: poster('warm romantic movie poster, giant sycamore tree over small town rooftops at golden hour, young couple, pastel tones'),
+    posterUrl: poster(14),
     createdAt: '2026-04-01 10:10',
   },
   {
@@ -274,7 +265,7 @@ export const movies: Movie[] = [
     tags: ['科幻', '动作', '悬疑'],
     rating: 7.8,
     ratingCount: 6543,
-    posterUrl: poster('inverted time movie poster, mirrored bullet trails and shattering glass, architectural symmetry, teal and orange'),
+    posterUrl: poster(15),
     createdAt: '2026-04-03 14:52',
   },
   {
@@ -291,7 +282,7 @@ export const movies: Movie[] = [
     tags: ['剧情', '文艺'],
     rating: 8.5,
     ratingCount: 4321,
-    posterUrl: poster('quiet slice of life movie poster, tokyo alley in morning light, hanging laundry and an old cassette tape, soft film look'),
+    posterUrl: poster(16),
     createdAt: '2026-04-08 11:44',
   },
   {
@@ -308,7 +299,7 @@ export const movies: Movie[] = [
     tags: ['动画', '动作', '科幻'],
     rating: 8.9,
     ratingCount: 8877,
-    posterUrl: poster('dynamic animation movie poster, spider hero swinging across a glitch-art multiverse cityscape, vivid graffiti colors'),
+    posterUrl: poster(17),
     createdAt: '2026-04-12 16:36',
   },
   {
@@ -325,7 +316,7 @@ export const movies: Movie[] = [
     tags: ['传记', '剧情', '历史'],
     rating: 8.9,
     ratingCount: 9655,
-    posterUrl: poster('historical biopic movie poster, silhouette of a man before a colossal fiery explosion, smoke and embers, black and white portraits'),
+    posterUrl: poster(18),
     createdAt: '2026-04-15 10:02',
   },
 ]

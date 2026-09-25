@@ -362,7 +362,7 @@ export default function AdminMovies() {
             />
           </div>
           <div className="field" style={{ gridColumn: '1 / -1' }}>
-            <label>海报链接（留空则按片名自动生成占位海报）</label>
+            <label>海报链接（留空则使用通用占位海报）</label>
             <input
               placeholder="https://…"
               value={form.posterUrl}
