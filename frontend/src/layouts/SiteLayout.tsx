@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { currentUser } from '../data/user'
+import { api } from '../api'
+import type { MeProfile } from '../api'
 import {
   CompassIcon,
   FilmIcon,
@@ -11,6 +13,18 @@ import {
 export default function SiteLayout() {
   const { pathname } = useLocation()
   const isHome = pathname === '/'
+  // 用户信息来自 /api/me/profile（登录体系上线后由 JWT 会话替换）
+  const [user, setUser] = useState<MeProfile | null>(null)
+
+  useEffect(() => {
+    api
+      .profile()
+      .then(setUser)
+      .catch(() => {})
+  }, [])
+
+  const nickname = user?.nickname ?? '游客'
+  const isAdmin = user?.role === 'ADMIN'
 
   return (
     <div className="site-shell">
@@ -59,13 +73,13 @@ export default function SiteLayout() {
           </div>
 
           <div className="nav-user">
-            {currentUser.role === 'ADMIN' && (
+            {isAdmin && (
               <Link to="/admin" className="btn btn-ghost btn-sm">
                 管理后台
               </Link>
             )}
-            <Link to="/me" title={currentUser.nickname}>
-              <span className="avatar">{currentUser.nickname[0]}</span>
+            <Link to="/me" title={nickname}>
+              <span className="avatar">{nickname[0]}</span>
             </Link>
           </div>
         </div>

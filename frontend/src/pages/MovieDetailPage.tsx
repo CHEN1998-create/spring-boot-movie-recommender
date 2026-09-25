@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import MovieCard from '../components/MovieCard'
 import RatingStars from '../components/RatingStars'
 import { getMovie, movies } from '../data/movies'
-import { myFavorites, myRatings } from '../data/user'
+import { api } from '../api'
 import { scoreColor } from '../components/MovieCard'
 import { CheckIcon, HeartIcon, StarIcon } from '../components/Icons'
 
@@ -12,12 +12,63 @@ export default function MovieDetailPage() {
   const { id } = useParams()
   const movie = getMovie(Number(id))
 
-  // 本地交互状态（骨架阶段不落库，接接口后走 POST ratings / POST favorite）
-  const initialFav = myFavorites.some((f) => f.movieId === Number(id))
-  const initialRating = myRatings.find((r) => r.movieId === Number(id))?.score ?? 0
-  const [fav, setFav] = useState(initialFav)
-  const [myScore, setMyScore] = useState(initialRating) // 0 表示未评分
+  // 我的评分 / 收藏：来自后端（POST ratings、POST/DELETE favorite 落库）
+  const [fav, setFav] = useState(false)
+  const [myScore, setMyScore] = useState(0) // 0 表示未评分
   const [justRated, setJustRated] = useState(false)
+  const [busy, setBusy] = useState(false)
+  // 聚合分展示：评分接口返回最新均分/人数后本地覆盖（影片基础信息仍来自前端数据源）
+  const [aggRating, setAggRating] = useState(movie?.rating ?? 0)
+  const [aggCount, setAggCount] = useState(movie?.ratingCount ?? 0)
+
+  const movieId = movie?.id
+  useEffect(() => {
+    if (!movieId) return
+    let cancelled = false
+    api
+      .interaction(movieId)
+      .then((s) => {
+        if (cancelled) return
+        setFav(s.favorited)
+        setMyScore(s.myScore ?? 0)
+        setJustRated(false)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [movieId])
+
+  const handleRate = async (stars: number) => {
+    if (!movieId || busy) return
+    const score = stars * 2
+    setBusy(true)
+    try {
+      const r = await api.rate(movieId, score)
+      setMyScore(r.score)
+      setJustRated(true)
+      if (r.movieRating != null) setAggRating(r.movieRating)
+      if (r.movieRatingCount != null) setAggCount(r.movieRatingCount)
+    } catch (e) {
+      alert((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const toggleFav = async () => {
+    if (!movieId || busy) return
+    const next = !fav
+    setBusy(true)
+    try {
+      const r = await api.setFavorite(movieId, next)
+      setFav(r.favorited)
+    } catch (e) {
+      alert((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const related = useMemo(() => {
     if (!movie) return []
@@ -67,7 +118,7 @@ export default function MovieDetailPage() {
               <span className="dot" />
               <span>导演：{movie.director}</span>
               <span className="dot" />
-              <span>{movie.ratingCount.toLocaleString()} 人评过</span>
+              <span>{aggCount.toLocaleString()} 人评过</span>
             </div>
 
             <div className="tags">
@@ -83,7 +134,8 @@ export default function MovieDetailPage() {
             <div className="detail-actions">
               <button
                 className={`fav-btn${fav ? ' on' : ''}`}
-                onClick={() => setFav(!fav)}
+                onClick={toggleFav}
+                disabled={busy}
                 title={fav ? '点击取消收藏' : '加入收藏'}
               >
                 <HeartIcon size={16} filled={fav} />
@@ -103,28 +155,21 @@ export default function MovieDetailPage() {
               <div className="avg-row">
                 <span
                   className="score-badge"
-                  style={{ background: scoreColor(movie.rating), color: '#10131a' }}
+                  style={{ background: scoreColor(aggRating), color: '#10131a' }}
                 >
-                  <span className="n">{movie.rating.toFixed(1)}</span>
+                  <span className="n">{aggRating.toFixed(1)}</span>
                 </span>
                 <div>
                   <div style={{ fontWeight: 600 }}>片屿均分</div>
-                  <div className="count">{movie.ratingCount.toLocaleString()} 人评分</div>
+                  <div className="count">{aggCount.toLocaleString()} 人评分</div>
                 </div>
               </div>
               <hr className="rate-divider" />
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                <RatingStars
-                  initial={myScore ? myScore / 2 : 0}
-                  onRate={(stars) => {
-                    setMyScore(stars * 2)
-                    setJustRated(true)
-                    // TODO: 接 POST /api/movies/:id/ratings
-                  }}
-                />
+                <RatingStars initial={myScore ? myScore / 2 : 0} onRate={handleRate} />
                 {myScore > 0 && (
                   <span className="badge badge-green">
-                    {justRated ? '已提交（演示）' : '我的评分'} · {myScore} 分
+                    {justRated ? '已提交' : '我的评分'} · {myScore} 分
                   </span>
                 )}
               </div>

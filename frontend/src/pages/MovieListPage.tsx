@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import MovieCard from '../components/MovieCard'
 import Pagination from '../components/Pagination'
 import { movies, ALL_TAGS } from '../data/movies'
-import { myFavorites } from '../data/user'
+import { api } from '../api'
 import { SearchIcon } from '../components/Icons'
 
 const PAGE_SIZE = 12
@@ -17,8 +17,20 @@ export default function MovieListPage() {
   const [tag, setTag] = useState(params.get('tag') ?? '')
   const [sort, setSort] = useState<SortKey>('rating')
   const [page, setPage] = useState(1)
+  const [favIds, setFavIds] = useState<Set<number>>(new Set())
 
-  const favIds = new Set(myFavorites.map((f) => f.movieId))
+  useEffect(() => {
+    let cancelled = false
+    api
+      .myFavorites()
+      .then((fs) => {
+        if (!cancelled) setFavIds(new Set(fs.map((f) => f.movieId)))
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const filtered = useMemo(() => {
     let list = movies.filter((m) => {

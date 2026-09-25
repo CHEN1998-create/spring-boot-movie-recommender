@@ -1,18 +1,68 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import RatingStars from '../components/RatingStars'
 import { getMovie } from '../data/movies'
-import { currentUser, myFavorites, myPreferredTags, myRatings } from '../data/user'
 import { ALL_TAGS } from '../data/movies'
+import { api } from '../api'
+import type { MeProfile } from '../api'
+import type { MyRating, MyFavorite } from '../types'
 import { CheckIcon, ClockIcon, HeartIcon } from '../components/Icons'
 
 type Tab = 'ratings' | 'favorites' | 'prefs'
 
-/** 个人中心：评分历史 / 收藏 / 推荐偏好（PRD 页面 6） */
+/** 个人中心：评分历史 / 收藏 / 推荐偏好（PRD 页面 6，数据来自 /api/me/*） */
 export default function MePage() {
   const [tab, setTab] = useState<Tab>('ratings')
-  const [tags, setTags] = useState<string[]>(myPreferredTags)
+  const [profile, setProfile] = useState<MeProfile | null>(null)
+  const [ratings, setRatings] = useState<MyRating[]>([])
+  const [favorites, setFavorites] = useState<MyFavorite[]>([])
+  const [error, setError] = useState('')
+  // 偏好标签面板：以画像标签为初值，勾选交互为本地演示
+  const [tags, setTags] = useState<string[]>([])
   const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([api.profile(), api.myRatings(), api.myFavorites()])
+      .then(([p, r, f]) => {
+        if (cancelled) return
+        setProfile(p)
+        setRatings(r)
+        setFavorites(f)
+        setTags(p.topTags)
+      })
+      .catch((e) => {
+        if (!cancelled) setError((e as Error).message)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (error) {
+    return (
+      <div className="container page">
+        <div className="empty">
+          <div className="icon">👤</div>
+          <p>加载失败：{error}</p>
+          <button className="btn btn-ghost" onClick={() => location.reload()} style={{ marginTop: 16 }}>
+            重试
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="container page">
+        <div className="empty">
+          <div className="icon">👤</div>
+          <p>正在加载个人档案…</p>
+        </div>
+      </div>
+    )
+  }
 
   const toggleTag = (t: string) => {
     setSaved(false)
@@ -23,14 +73,14 @@ export default function MePage() {
     <div className="container page">
       {/* 头部档案 */}
       <div className="me-head">
-        <span className="avatar lg">{currentUser.nickname[0]}</span>
+        <span className="avatar lg">{profile.nickname[0]}</span>
         <div className="info">
-          <h1>{currentUser.nickname}</h1>
+          <h1>{profile.nickname}</h1>
           <p className="mail">
-            {currentUser.email} · {currentUser.joinedAt} 加入片屿
+            {profile.email} · {profile.joinedAt} 加入片屿
           </p>
           <div className="tags">
-            <span className="badge badge-gray">角色 · {currentUser.role === 'ADMIN' ? '管理员' : '注册用户'}</span>
+            <span className="badge badge-gray">角色 · {profile.role === 'ADMIN' ? '管理员' : '注册用户'}</span>
             {tags.slice(0, 4).map((t) => (
               <span key={t} className="badge badge-orange">
                 {t}
@@ -40,11 +90,11 @@ export default function MePage() {
         </div>
         <div className="me-stats">
           <div>
-            <b>{myRatings.length}</b>
+            <b>{ratings.length}</b>
             <span>评分</span>
           </div>
           <div>
-            <b>{myFavorites.length}</b>
+            <b>{favorites.length}</b>
             <span>收藏</span>
           </div>
           <div>
@@ -57,10 +107,10 @@ export default function MePage() {
       {/* 页签 */}
       <div className="tabs">
         <button className={`tab${tab === 'ratings' ? ' active' : ''}`} onClick={() => setTab('ratings')}>
-          我的评分（{myRatings.length}）
+          我的评分（{ratings.length}）
         </button>
         <button className={`tab${tab === 'favorites' ? ' active' : ''}`} onClick={() => setTab('favorites')}>
-          我的收藏（{myFavorites.length}）
+          我的收藏（{favorites.length}）
         </button>
         <button className={`tab${tab === 'prefs' ? ' active' : ''}`} onClick={() => setTab('prefs')}>
           我的偏好
@@ -70,7 +120,10 @@ export default function MePage() {
       {/* 我的评分 */}
       {tab === 'ratings' && (
         <div className="record-list">
-          {myRatings.map((r) => {
+          {ratings.length === 0 && (
+            <p style={{ color: 'var(--text-3)', fontSize: 13 }}>还没有评分记录，去电影库给第一部影片打分吧。</p>
+          )}
+          {ratings.map((r) => {
             const m = getMovie(r.movieId)
             if (!m) return null
             return (
@@ -103,7 +156,10 @@ export default function MePage() {
       {/* 我的收藏 */}
       {tab === 'favorites' && (
         <div className="record-list">
-          {myFavorites.map((f) => {
+          {favorites.length === 0 && (
+            <p style={{ color: 'var(--text-3)', fontSize: 13 }}>收藏夹还是空的，遇到喜欢的片子点个收藏吧。</p>
+          )}
+          {favorites.map((f) => {
             const m = getMovie(f.movieId)
             if (!m) return null
             return (
@@ -140,7 +196,9 @@ export default function MePage() {
       {tab === 'prefs' && (
         <div className="pref-panel">
           <h3>推荐偏好标签</h3>
-          <p className="hint">勾选你感兴趣的标签，推荐引擎会提高对应类型的权重（演示：仅前端状态，接接口后保存到用户画像）</p>
+          <p className="hint">
+            当前画像由你的评分与收藏行为自动计算（当前：{profile.topTags.join('、') || '暂无'}）；下方勾选为演示交互，登录体系上线后保存到用户画像。
+          </p>
           <div className="tag-cloud">
             {ALL_TAGS.map((t) => (
               <button
