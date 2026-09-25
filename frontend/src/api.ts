@@ -31,6 +31,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (res.status === 204) {
     return undefined as T
   }
+  // 身份失效自愈：本地 uid 指向的用户已不存在（如后端换库）时，
+  // 清除 uid 重试一次，回落为演示身份继续浏览
+  if (res.status === 401 && uid) {
+    localStorage.removeItem(UID_KEY)
+    return request<T>(path, init)
+  }
   if (!res.ok) {
     let message = `请求失败（${res.status}）`
     try {

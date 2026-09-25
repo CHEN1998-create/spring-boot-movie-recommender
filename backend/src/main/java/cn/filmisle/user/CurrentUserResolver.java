@@ -1,5 +1,6 @@
 package cn.filmisle.user;
 
+import cn.filmisle.common.UnauthorizedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -8,8 +9,8 @@ import java.time.LocalDateTime;
 
 /**
  * 当前用户解析（演示阶段方案，auth 模块上线后由 JWT 鉴权替换）：
- * - 请求头 X-User-Id 能匹配到用户 → 使用该用户（支持多浏览器各自建档演示个性化差异）；
- * - 缺失或无效 → 回落到演示用户（demo@filmisle.cn，懒创建）。
+ * - 请求头缺失或为空 → 回落到演示用户（demo@filmisle.cn，懒创建），保证游客可浏览；
+ * - 请求头有值但无法匹配用户（伪造 / 已失效）→ 401 拒绝，防止借 demo 管理员身份越权。
  */
 @Component
 public class CurrentUserResolver {
@@ -28,9 +29,11 @@ public class CurrentUserResolver {
         if (StringUtils.hasText(userIdHeader)) {
             try {
                 Long id = Long.valueOf(userIdHeader.trim());
-                return userRepository.findById(id).orElseGet(this::demoUser);
+                return userRepository.findById(id)
+                        .orElseThrow(() -> new UnauthorizedException("用户不存在或登录已失效，请重新进入演示身份"));
             } catch (NumberFormatException ignored) {
-                // 非法头值按未登录处理
+                // 非法头值同样视为无效身份
+                throw new UnauthorizedException("用户身份无效，请重新进入演示身份");
             }
         }
         return demoUser();

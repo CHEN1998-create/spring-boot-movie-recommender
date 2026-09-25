@@ -13,6 +13,12 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /** 401 未认证（X-User-Id 指向的用户不存在 / 已失效） */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
+        return body(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+    }
+
     /** 403 无权限（管理端接口鉴权失败） */
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Map<String, Object>> handleForbidden(ForbiddenException ex) {
