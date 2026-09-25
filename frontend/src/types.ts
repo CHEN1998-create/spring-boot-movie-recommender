@@ -49,25 +49,4 @@ export interface RecommendationItem {
   strategy: 'tag' | 'hot' | 'cold-start' // 推荐策略
 }
 
-/** 后台总览指标（对应 6.1 后台指标） */
-export interface AdminOverview {
-  movieCount: number
-  userCount: number
-  todayRatingCount: number
-  favoriteRate: number // 百分比
-  recoCtr: number // 推荐点击率
-  coldStartRate: number // 冷启动用户占比
-}
-
-export interface HotTag {
-  tag: string
-  count: number
-}
-
-export interface RecommendationLog {
-  id: number
-  userName: string
-  strategy: '标签偏好' | '热门加权' | '冷启动补位'
-  resultCount: number
-  time: string
-}
+/** 后台统计与公开概览类型统一收口在 api.ts（与后端 DTO 对齐） */

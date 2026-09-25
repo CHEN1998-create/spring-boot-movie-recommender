@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MovieCard from '../components/MovieCard'
 import { heroBackdrop, hotMovies, recentMovies, ALL_TAGS } from '../data/movies'
-import { adminOverview } from '../data/admin'
+import { api } from '../api'
+import type { PublicOverview } from '../api'
 import {
   ArrowRightIcon,
   ClapperIcon,
@@ -13,6 +15,21 @@ import {
 
 /** 官网 / 用户前台首页：产品介绍 + 热门电影 + 注册入口（PRD 页面 1） */
 export default function HomePage() {
+  const [overview, setOverview] = useState<PublicOverview | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    api
+      .publicOverview()
+      .then((o) => {
+        if (!cancelled) setOverview(o)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <>
       {/* 主视觉 */}
@@ -45,19 +62,19 @@ export default function HomePage() {
           </div>
           <div className="stats">
             <div className="stat">
-              <b>{adminOverview.movieCount}</b>
+              <b>{overview ? overview.movieCount : '—'}</b>
               <span>在库电影</span>
             </div>
             <div className="stat">
-              <b>{adminOverview.userCount.toLocaleString()}</b>
+              <b>{overview ? overview.userCount.toLocaleString() : '—'}</b>
               <span>注册岛民</span>
             </div>
             <div className="stat">
-              <b>{adminOverview.todayRatingCount}</b>
+              <b>{overview ? overview.todayRatingCount : '—'}</b>
               <span>今日评分</span>
             </div>
             <div className="stat">
-              <b>{adminOverview.recoCtr}%</b>
+              <b>{overview ? `${overview.recoCtr}%` : '—'}</b>
               <span>推荐点击率</span>
             </div>
           </div>

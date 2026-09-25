@@ -30,6 +30,11 @@ export default function RecommendationsPage() {
     }
   }, [])
 
+  /** 推荐位点击上报（PRD 6.1 推荐点击率），fire-and-forget，失败不打扰用户 */
+  const trackClick = (movieId: number) => {
+    api.reportRecoClick(movieId).catch(() => {})
+  }
+
   if (error) {
     return (
       <div className="container page">
@@ -98,7 +103,11 @@ export default function RecommendationsPage() {
             const st = STRATEGY_LABEL[item.strategy] ?? STRATEGY_LABEL.hot
             return (
               <div className="reco-item" key={item.movieId}>
-                <Link to={`/movies/${item.movieId}`} className="thumb">
+                <Link
+                  to={`/movies/${item.movieId}`}
+                  className="thumb"
+                  onClick={() => trackClick(item.movieId)}
+                >
                   <img src={item.posterUrl} alt={item.title} loading="lazy" />
                 </Link>
                 <div>
@@ -106,7 +115,9 @@ export default function RecommendationsPage() {
                     <span style={{ color: 'var(--text-3)', fontStyle: 'italic', fontWeight: 800 }}>
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <Link to={`/movies/${item.movieId}`}>{item.title}</Link>
+                    <Link to={`/movies/${item.movieId}`} onClick={() => trackClick(item.movieId)}>
+                      {item.title}
+                    </Link>
                     <span className={`badge ${st.cls}`}>{st.text}</span>
                   </div>
                   <div className="r-sub">

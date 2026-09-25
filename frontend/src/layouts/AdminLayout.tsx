@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { currentUser } from '../data/user'
+import { api } from '../api'
+import type { MeProfile } from '../api'
 import {
   ChartIcon,
   CompassIcon,
@@ -39,6 +41,20 @@ const TITLES: Record<string, string> = {
 /** 后台布局：侧边栏 + 顶栏 + 内容区（PRD admin.xxx.com） */
 export default function AdminLayout() {
   const { pathname } = useLocation()
+  const [me, setMe] = useState<MeProfile | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    api
+      .profile()
+      .then((p) => {
+        if (!cancelled) setMe(p)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="admin-shell">
@@ -95,9 +111,9 @@ export default function AdminLayout() {
           <span className="title">{TITLES[pathname] ?? '管理台'}</span>
           <div className="right">
             <span style={{ color: 'var(--text-3)', fontSize: 13 }}>
-              管理员 · {currentUser.nickname}
+              {me ? `${me.role === 'ADMIN' ? '管理员' : '用户'} · ${me.nickname}` : '正在识别身份…'}
             </span>
-            <span className="avatar sm">{currentUser.nickname[0]}</span>
+            <span className="avatar sm">{me ? me.nickname[0] : '?'}</span>
           </div>
         </header>
         <div className="admin-content">

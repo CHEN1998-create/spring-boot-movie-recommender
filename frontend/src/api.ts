@@ -28,6 +28,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (uid) headers['X-User-Id'] = String(uid)
 
   const res = await fetch(BASE + path, { ...init, headers })
+  if (res.status === 204) {
+    return undefined as T
+  }
   if (!res.ok) {
     let message = `请求失败（${res.status}）`
     try {
@@ -58,6 +61,32 @@ export const api = {
   setFavorite: (movieId: number, on: boolean) =>
     request<FavoriteResult>(`/movies/${movieId}/favorite`, { method: on ? 'POST' : 'DELETE' }),
   recommendations: () => request<RecommendationResponse>('/recommendations'),
+  /** 推荐位点击上报（幂等：同人同片每天只计一次），fire-and-forget 调用 */
+  reportRecoClick: (movieId: number) =>
+    request<void>(`/recommendations/${movieId}/click`, { method: 'POST' }),
+
+  // ---------- 管理后台 ----------
+  /** 后台全部统计指标（数据看板 + 推荐概览共用） */
+  adminStats: () => request<AdminStats>('/admin/stats'),
+  /** 公开站点概览（游客可访问，首页 Hero 用） */
+  publicOverview: () => request<PublicOverview>('/stats/overview'),
+  /** 电影列表（管理页与前台共用，kw/tag/分页/排序由后端处理） */
+  movieList: (params: { kw?: string; tag?: string; page?: number; pageSize?: number; sort?: string }) => {
+    const qs = new URLSearchParams()
+    if (params.kw) qs.set('kw', params.kw)
+    if (params.tag) qs.set('tag', params.tag)
+    qs.set('page', String(params.page ?? 1))
+    qs.set('pageSize', String(params.pageSize ?? 12))
+    if (params.sort) qs.set('sort', params.sort)
+    return request<MovieListResponse>(`/movies?${qs.toString()}`)
+  },
+  allTags: () => request<string[]>('/tags'),
+  createMovie: (body: MoviePayload) =>
+    request<MoviePayloadResult>('/admin/movies', { method: 'POST', body: json(body) }),
+  updateMovie: (movieId: number, body: MoviePayload) =>
+    request<MoviePayloadResult>(`/admin/movies/${movieId}`, { method: 'PATCH', body: json(body) }),
+  deleteMovie: (movieId: number) =>
+    request<void>(`/admin/movies/${movieId}`, { method: 'DELETE' }),
 }
 
 // ---------- 响应类型（与后端 DTO 对齐） ----------
@@ -115,4 +144,85 @@ export interface RecommendationResponse {
     ratedCount: number
     favoriteCount: number
   }
+}
+
+// ---------- 管理后台类型 ----------
+
+/** 电影条目（对齐后端 MovieResponse，createdAt 为 ISO 字符串） */
+export interface MovieItem {
+  id: number
+  title: string
+  originalTitle: string
+  year: number
+  duration: number
+  director: string
+  cast: string[]
+  region: string
+  summary: string
+  tags: string[]
+  rating: number | null
+  ratingCount: number | null
+  posterUrl: string
+  createdAt: string
+}
+
+export interface MovieListResponse {
+  items: MovieItem[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+/** 电影新增 / 编辑请求体（对齐后端 MovieRequest） */
+export interface MoviePayload {
+  title: string
+  originalTitle?: string
+  year?: number
+  duration?: number
+  director?: string
+  /** 主演，用 / 或逗号分隔 */
+  cast?: string
+  region?: string
+  summary?: string
+  tags?: string[]
+  posterUrl?: string
+}
+
+export type MoviePayloadResult = MovieItem
+
+/** 后台统计（对齐后端 AdminStatsResponse，PRD 6.1 指标） */
+export interface AdminStats {
+  movieCount: number
+  userCount: number
+  ratingCount: number
+  todayRatingCount: number
+  favoriteCount: number
+  /** 收藏率：收藏过至少一部的用户占比（%） */
+  favoriteRate: number
+  recoTotalCount: number
+  todayRecoCount: number
+  avgResultCount: number
+  /** 推荐点击率：累计点击 / 累计推荐展示条数（%） */
+  recoCtr: number
+  recoClickCount: number
+  coldStartRate: number
+  weeklyRatings: { day: string; count: number }[]
+  strategyDist: { strategy: string; count: number; percent: number }[]
+  hotTags: { tag: string; count: number }[]
+  recentLogs: {
+    id: number
+    userId: number
+    userName: string
+    strategy: string
+    resultCount: number
+    time: string
+  }[]
+}
+
+/** 公开站点概览（对齐后端 PublicOverviewResponse，游客可访问） */
+export interface PublicOverview {
+  movieCount: number
+  userCount: number
+  todayRatingCount: number
+  recoCtr: number
 }
