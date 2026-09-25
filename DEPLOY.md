@@ -4,11 +4,13 @@
 
 ## 平台任选其一（认根目录 Dockerfile 自动构建）
 
-| 平台 | 免费额度 | 特点 | 国内访问 |
+| 平台 | 免费情况 | 特点 | 国内访问 |
 |---|---|---|---|
-| **Zeabur**（推荐） | 免费额度可跑 1 服务 | 中文界面，GitHub 登录即用 | 好 |
-| Koyeb | 1 个免费 Web 服务（常驻） | 构建资源充足 | 一般 |
-| Render | 免费 Web 服务 | 15 分钟无访问休眠，冷启动约 50s | 一般 |
+| **Zeabur Free**（推荐） | $0/月，免信用卡 | 中文界面；容器服务可跑，闲置自动休眠，下次访问自动唤醒（冷启动数秒） | 好 |
+| ClawCloud Run | GitHub 账号注册送 $5/月额度（免信用卡） | 按分钟计费，$5 足够 512MB 小容器**常驻不休眠**；新加坡/日本节点 | 好 |
+| Render | 免费 Web 服务 750h/月 | 15 分钟无访问休眠，冷启动约 50s | 一般 |
+
+> 实测建议：日常演示选 Zeabur Free；希望 24h 常驻不休眠选 ClawCloud Run。
 
 ## Zeabur 部署步骤
 
@@ -23,6 +25,13 @@
 ## Koyeb / Render
 
 同样是「连接 GitHub 仓库 → 检测 Dockerfile → 创建服务 → 绑定域名」，环境变量配置相同。
+
+## ClawCloud Run 要点
+
+- 注册：[run.claw.cloud](https://run.claw.cloud) 用 GitHub 账号登录（注册满一定时间的 GitHub 账号可领每月 $5 免费额度，免信用卡）
+- 创建服务选 **GitHub 仓库** → 选本仓库 → 区域选 Singapore / Tokyo
+- 构建方式选 Dockerfile → 内存建议 512MB（$5 额度内可常驻）
+- 网络里开启 Public Access 生成公网域名
 
 ## 环境变量说明
 
