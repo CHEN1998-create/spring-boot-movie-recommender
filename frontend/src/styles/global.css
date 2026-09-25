@@ -1,0 +1,516 @@
+/* ============================================
+   片屿 FilmIsle · 设计系统与全局样式
+   暗色影院风：深底 + 琥珀主色，参考 Letterboxd 质感
+   ============================================ */
+
+:root {
+  /* 色板 */
+  --bg: #0c0e14;
+  --bg-soft: #11141d;
+  --surface: #161a25;
+  --surface-2: #1d2230;
+  --surface-3: #252b3d;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  --text: #e9ebf1;
+  --text-2: #9aa3b8;
+  --text-3: #6b7389;
+
+  --accent: #ff8c37;
+  --accent-strong: #ff7a1a;
+  --accent-soft: rgba(255, 140, 55, 0.14);
+  --green: #4ade80;
+  --blue: #5b8def;
+  --purple: #8f7bf3;
+  --red: #f87171;
+
+  /* 评分分档色 */
+  --score-high: #4ade80;
+  --score-mid: #5b8def;
+  --score-low: #ff8c37;
+  --score-poor: #8a93a8;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  --nav-h: 64px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro SC', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 8px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- 布局容器 ---------- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.page {
+  padding: 32px 0 64px;
+  min-height: calc(100vh - var(--nav-h) - 120px);
+}
+
+/* ---------- 通用按钮 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #16100a;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-2);
+}
+.btn-ghost:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.btn-danger {
+  background: transparent;
+  border-color: rgba(248, 113, 113, 0.35);
+  color: var(--red);
+}
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.12);
+}
+.btn-sm {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+.btn-lg {
+  height: 46px;
+  padding: 0 28px;
+  font-size: 15px;
+  border-radius: 10px;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- 标签 Chip ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12.5px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chip:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.chip.active {
+  background: var(--accent-soft);
+  border-color: rgba(255, 140, 55, 0.5);
+  color: var(--accent);
+  font-weight: 500;
+}
+.chip.static {
+  cursor: default;
+  pointer-events: none;
+}
+.chip.mini {
+  height: 22px;
+  padding: 0 9px;
+  font-size: 11.5px;
+}
+
+/* ---------- 表单 ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.field label {
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.field input,
+.field select,
+.field textarea,
+.input {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+.field textarea {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.6;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.field input::placeholder,
+.field textarea::placeholder,
+.input::placeholder {
+  color: var(--text-3);
+}
+
+/* ---------- 表格（后台） ---------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.table th {
+  text-align: left;
+  padding: 10px 14px;
+  color: var(--text-3);
+  font-weight: 500;
+  font-size: 12.5px;
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  vertical-align: middle;
+}
+.table tbody tr {
+  transition: background 0.12s ease;
+}
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+.table td:first-child,
+.table th:first-child {
+  padding-left: 20px;
+}
+.table td:last-child,
+.table th:last-child {
+  padding-right: 20px;
+}
+
+/* ---------- 徽标 ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-green {
+  background: rgba(74, 222, 128, 0.13);
+  color: var(--green);
+}
+.badge-blue {
+  background: rgba(91, 141, 239, 0.13);
+  color: var(--blue);
+}
+.badge-orange {
+  background: rgba(255, 140, 55, 0.14);
+  color: var(--accent);
+}
+.badge-purple {
+  background: rgba(143, 123, 243, 0.14);
+  color: var(--purple);
+}
+.badge-gray {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-3);
+}
+
+/* ---------- 评分徽章（Letterboxd 风格分块） ---------- */
+.score-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 48px;
+  border-radius: 9px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.score-badge .n {
+  font-size: 16px;
+}
+.score-badge .u {
+  font-size: 10px;
+  opacity: 0.7;
+  font-weight: 500;
+}
+.score-9 .score-badge, .score-badge.s9 { background: var(--score-high); color: #0b2013; }
+.score-8 .score-badge, .score-badge.s8 { background: var(--score-mid); color: #0d1830; }
+.score-7 .score-badge, .score-badge.s7 { background: var(--score-low); color: #241304; }
+.score-6 .score-badge, .score-badge.s6 { background: var(--score-poor); color: #14171d; }
+
+/* ---------- 分页 ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+}
+.page-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.page-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #16100a;
+  font-weight: 600;
+}
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.page-info {
+  color: var(--text-3);
+  font-size: 13px;
+  margin: 0 8px;
+}
+
+/* ---------- 弹窗 ---------- */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 12, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.15s ease;
+}
+.modal {
+  width: min(560px, calc(100vw - 48px));
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  animation: slideUp 0.2s ease;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.modal-head h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.modal-body {
+  padding: 20px 24px;
+}
+.modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- 区块标题 ---------- */
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.section-head h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.section-head .sub {
+  color: var(--text-3);
+  font-size: 13px;
+  margin-top: 2px;
+}
+.section-head .more {
+  color: var(--text-3);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s;
+}
+.section-head .more:hover {
+  color: var(--accent);
+}
+
+/* ---------- 空状态 ---------- */
+.empty {
+  text-align: center;
+  padding: 64px 0;
+  color: var(--text-3);
+}
+.empty .icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+/* ---------- 动画 ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 演示提示条（骨架阶段标注假数据） */
+.demo-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(91, 141, 239, 0.12);
+  color: var(--blue);
+  font-size: 12px;
+}
