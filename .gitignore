@@ -4,6 +4,12 @@ node_modules/
 # 构建产物
 dist/
 
+# 本地工具链（便携版 JDK / Maven）
+tools/
+
+# 后端运行时数据
+backend/data/
+
 # 日志与本地环境
 *.log
 .env

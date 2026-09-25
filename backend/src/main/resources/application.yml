@@ -1,0 +1,55 @@
+# 片屿后端配置：默认使用 H2（文件模式，兼容 MySQL 语法）保证零依赖可运行
+spring:
+  application:
+    name: filmisle-backend
+
+  datasource:
+    # H2 原生模式（MODE=MySQL 会拒绝 Hibernate 的 identity DDL，故不启用）
+    url: jdbc:h2:file:./data/filmisle;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jackson:
+    time-zone: Asia/Shanghai
+
+server:
+  port: 8080
+
+logging:
+  level:
+    cn.filmisle: info
+
+---
+# ============ MySQL 8 配置预留 ============
+# 安装 MySQL 后执行：
+#   1. CREATE DATABASE filmisle DEFAULT CHARACTER SET utf8mb4;
+#   2. 修改下方账号密码
+#   3. 启动参数加 -Dspring.profiles.active=mysql
+spring:
+  config:
+    activate:
+      on-profile: mysql
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/filmisle?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: change-me # TODO: 改成你的 MySQL 密码
+
+  jpa:
+    hibernate:
+      ddl-auto: update
