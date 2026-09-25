@@ -10,6 +10,9 @@ tools/
 # 后端运行时数据
 backend/data/
 
+# 本地一体化部署验证用（前端构建产物拷贝，正式产物由 Docker 构建生成）
+backend/public/
+
 # 日志与本地环境
 *.log
 .env

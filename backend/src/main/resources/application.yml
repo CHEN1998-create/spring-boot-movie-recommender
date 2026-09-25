@@ -5,7 +5,8 @@ spring:
 
   datasource:
     # H2 原生模式（MODE=MySQL 会拒绝 Hibernate 的 identity DDL，故不启用）
-    url: jdbc:h2:file:./data/filmisle;AUTO_SERVER=TRUE
+    # 部署时可配 DB_PATH 指向挂载卷实现持久化
+    url: jdbc:h2:file:${DB_PATH:./data/filmisle};AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
@@ -27,7 +28,7 @@ spring:
     time-zone: Asia/Shanghai
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 # JWT 认证：secret 演示环境用默认值，部署时用环境变量 JWT_SECRET 覆盖
 jwt:

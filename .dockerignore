@@ -1,0 +1,9 @@
+.git
+backend/data
+backend/public
+backend/target
+frontend/node_modules
+frontend/dist
+tools
+*.md
+!README.md

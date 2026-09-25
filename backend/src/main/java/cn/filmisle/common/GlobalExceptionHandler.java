@@ -31,6 +31,12 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
+    /** 404 静态资源不存在（Spring 6.1 起未匹配路径抛 NoResourceFoundException，避免被兜底成 500） */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoStaticResource(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return body(HttpStatus.NOT_FOUND, "资源不存在: " + ex.getResourcePath(), null);
+    }
+
     /** 409 资源冲突（注册邮箱已存在等） */
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
