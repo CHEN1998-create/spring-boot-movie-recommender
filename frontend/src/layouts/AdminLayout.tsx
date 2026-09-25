@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { api } from '../api'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { api, clearSession } from '../api'
 import type { MeProfile } from '../api'
 import {
   ChartIcon,
@@ -38,13 +38,15 @@ const TITLES: Record<string, string> = {
   '/admin/recommendations': '推荐概览',
 }
 
-/** 后台布局：侧边栏 + 顶栏 + 内容区（PRD admin.xxx.com） */
+/** 后台布局：侧边栏 + 顶栏 + 内容区（PRD admin.xxx.com）；入口由 RequireAdmin 守卫 */
 export default function AdminLayout() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [me, setMe] = useState<MeProfile | null>(null)
 
   useEffect(() => {
     let cancelled = false
+    // JWT 会话校验：token 换身份，失效时后端 401 由 request 统一跳登录
     api
       .profile()
       .then((p) => {
@@ -55,6 +57,11 @@ export default function AdminLayout() {
       cancelled = true
     }
   }, [])
+
+  const logout = () => {
+    clearSession()
+    navigate('/login')
+  }
 
   return (
     <div className="admin-shell">
@@ -97,7 +104,7 @@ export default function AdminLayout() {
             href="#"
             onClick={(e) => {
               e.preventDefault()
-              window.location.href = '/login'
+              logout()
             }}
           >
             <LogOutIcon size={15} />

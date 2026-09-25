@@ -1,21 +1,49 @@
 /**
- * API 封装：统一 fetch / 错误处理 / 演示身份。
- * 身份方案（登录模块上线前的过渡）：后端首次在 /api/me/profile 返回用户 id，
- * 前端持久化到 localStorage，后续请求通过 X-User-Id 头携带。
+ * API 封装：统一 fetch / 错误处理 / JWT 会话。
+ * 身份方案：登录后 JWT 存 localStorage（filmisle_token），请求带 Authorization: Bearer；
+ * 无 token 的浏览类请求由后端回落演示身份。401 统一清除会话并跳转登录页。
  */
 const BASE = '/api'
-const UID_KEY = 'filmisle_uid'
+const TOKEN_KEY = 'filmisle_token'
+const USER_KEY = 'filmisle_user'
 
 import type { MyRating, MyFavorite } from './types'
 
-export function getUserId(): number | null {
-  const raw = localStorage.getItem(UID_KEY)
-  const id = raw ? Number(raw) : NaN
-  return Number.isFinite(id) ? id : null
+export interface SessionUser {
+  id: number
+  email: string
+  nickname: string
+  role: 'USER' | 'ADMIN'
 }
 
-export function setUserId(id: number) {
-  localStorage.setItem(UID_KEY, String(id))
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY)
+}
+
+export function getSessionUser(): SessionUser | null {
+  try {
+    const raw = localStorage.getItem(USER_KEY)
+    return raw ? (JSON.parse(raw) as SessionUser) : null
+  } catch {
+    return null
+  }
+}
+
+export function setSession(token: string, user: SessionUser) {
+  localStorage.setItem(TOKEN_KEY, token)
+  localStorage.setItem(USER_KEY, JSON.stringify(user))
+}
+
+export function clearSession() {
+  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(USER_KEY)
+}
+
+/** 会话失效时的统一出口：清会话 → 跳登录页（带回跳地址） */
+function expireToLogin() {
+  clearSession()
+  const next = encodeURIComponent(window.location.pathname + window.location.search)
+  window.location.href = `/login?next=${next}`
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -24,18 +52,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...((init?.headers as Record<string, string>) ?? {}),
   }
   if (init?.body) headers['Content-Type'] = 'application/json'
-  const uid = getUserId()
-  if (uid) headers['X-User-Id'] = String(uid)
+  const token = getToken()
+  if (token) headers['Authorization'] = `Bearer ${token}`
 
   const res = await fetch(BASE + path, { ...init, headers })
   if (res.status === 204) {
     return undefined as T
   }
-  // 身份失效自愈：本地 uid 指向的用户已不存在（如后端换库）时，
-  // 清除 uid 重试一次，回落为演示身份继续浏览
-  if (res.status === 401 && uid) {
-    localStorage.removeItem(UID_KEY)
-    return request<T>(path, init)
+  // 登录态失效（token 过期 / 用户被删）：清会话并去登录页重新建立
+  if (res.status === 401) {
+    expireToLogin()
+    throw new Error('登录已失效，请重新登录')
   }
   if (!res.ok) {
     let message = `请求失败（${res.status}）`
@@ -53,12 +80,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 const json = (body: unknown) => JSON.stringify(body)
 
 export const api = {
-  /** 会话建立 + 档案（首次调用会把后端返回的用户 id 存入 localStorage） */
-  profile: async () => {
-    const p = await request<MeProfile>('/me/profile')
-    setUserId(p.id)
-    return p
-  },
+  // ---------- 认证 ----------
+  register: (body: { email: string; password: string; nickname: string }) =>
+    request<AuthResponse>('/auth/register', { method: 'POST', body: json(body) }),
+  login: (body: { email: string; password: string }) =>
+    request<AuthResponse>('/auth/login', { method: 'POST', body: json(body) }),
+  /** 用 token 换当前身份（后台顶栏等处校验登录态） */
+  authMe: () => request<SessionUser>('/auth/me'),
+
+  /** 档案（个人中心 / 顶栏身份；无 token 由后端回落演示身份） */
+  profile: () => request<MeProfile>('/me/profile'),
   interaction: (movieId: number) => request<InteractionState>(`/me/interaction/${movieId}`),
   myRatings: () => request<MyRating[]>('/me/ratings'),
   myFavorites: () => request<MyFavorite[]>('/me/favorites'),
@@ -96,6 +127,11 @@ export const api = {
 }
 
 // ---------- 响应类型（与后端 DTO 对齐） ----------
+
+export interface AuthResponse {
+  token: string
+  user: SessionUser
+}
 
 export interface MeProfile {
   id: number

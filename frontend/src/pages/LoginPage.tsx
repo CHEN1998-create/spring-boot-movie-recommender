@@ -1,19 +1,35 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { api, setSession } from '../api'
 import { FilmIcon } from '../components/Icons'
 
-/** 登录 / 注册页（PRD 页面 2，骨架阶段仅前端模拟） */
+/** 登录 / 注册页（PRD 页面 2）：对接 /api/auth/login 与 /api/auth/register */
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [nickname, setNickname] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
   const navigate = useNavigate()
+  const [params] = useSearchParams()
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: 接 POST /api/auth/login 或 /api/auth/register，JWT 存储后跳转
-    navigate('/me')
+    setError('')
+    setBusy(true)
+    try {
+      const res =
+        mode === 'login'
+          ? await api.login({ email, password })
+          : await api.register({ email, password, nickname })
+      setSession(res.token, res.user)
+      navigate(params.get('next') || '/', { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '操作失败，请重试')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -64,27 +80,32 @@ export default function LoginPage() {
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 6 }}>
-            {mode === 'login' ? '登录' : '注册并登录'}
+          {error && (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 6 }} disabled={busy}>
+            {busy ? '请稍候…' : mode === 'login' ? '登录' : '注册并登录'}
           </button>
         </form>
 
         <div className="auth-switch">
           {mode === 'login' ? (
             <>
-              还没有账号？<a onClick={() => setMode('register')} href="#">立即注册</a>
+              还没有账号？<a onClick={() => { setMode('register'); setError('') }} href="#">立即注册</a>
             </>
           ) : (
             <>
-              已有账号？<a onClick={() => setMode('login')} href="#">直接登录</a>
+              已有账号？<a onClick={() => { setMode('login'); setError('') }} href="#">直接登录</a>
             </>
           )}
         </div>
 
         <div className="auth-demo">
-          骨架演示：暂不对接后端，任意邮箱密码均可进入。
+          演示账号：<code>demo@filmisle.cn</code> / <code>demo123456</code>
           <br />
-          演示账号：<code>demo@filmisle.cn</code>（具备管理员权限，可访问 <code>/admin</code>）
+          （具备管理员权限，可访问 <code>/admin</code>）
         </div>
       </div>
     </div>

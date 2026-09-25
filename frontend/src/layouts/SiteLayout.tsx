@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { api } from '../api'
-import type { MeProfile } from '../api'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { clearSession, getSessionUser } from '../api'
+import type { SessionUser } from '../api'
 import {
   CompassIcon,
   FilmIcon,
@@ -12,19 +12,23 @@ import {
 /** 前台布局：顶部导航 + 内容 + 页脚（官网 / 用户前台共用骨架） */
 export default function SiteLayout() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const isHome = pathname === '/'
-  // 用户信息来自 /api/me/profile（登录体系上线后由 JWT 会话替换）
-  const [user, setUser] = useState<MeProfile | null>(null)
+  // 登录态来自 JWT 会话（localStorage），路由切换时同步
+  const [session, setSession] = useState<SessionUser | null>(getSessionUser())
 
   useEffect(() => {
-    api
-      .profile()
-      .then(setUser)
-      .catch(() => {})
-  }, [])
+    setSession(getSessionUser())
+  }, [pathname])
 
-  const nickname = user?.nickname ?? '游客'
-  const isAdmin = user?.role === 'ADMIN'
+  const nickname = session?.nickname ?? '游客'
+  const isAdmin = session?.role === 'ADMIN'
+
+  const logout = () => {
+    clearSession()
+    setSession(null)
+    navigate('/')
+  }
 
   return (
     <div className="site-shell">
@@ -78,9 +82,27 @@ export default function SiteLayout() {
                 管理后台
               </Link>
             )}
-            <Link to="/me" title={nickname}>
-              <span className="avatar">{nickname[0]}</span>
-            </Link>
+            {session ? (
+              <>
+                <Link to="/me" title={nickname}>
+                  <span className="avatar">{nickname[0]}</span>
+                </Link>
+                <a
+                  href="#"
+                  className="btn btn-ghost btn-sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    logout()
+                  }}
+                >
+                  退出
+                </a>
+              </>
+            ) : (
+              <Link to="/login" className="btn btn-primary btn-sm">
+                登录
+              </Link>
+            )}
           </div>
         </div>
       </header>

@@ -797,6 +797,16 @@
   color: var(--blue);
   font-family: 'JetBrains Mono', Consolas, monospace;
 }
+.auth-error {
+  margin: 10px 2px 0;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: rgba(229, 72, 77, 0.09);
+  border: 1px solid rgba(229, 72, 77, 0.35);
+  color: var(--red, #e5484d);
+  font-size: 13px;
+  line-height: 1.5;
+}
 
 /* ---------- 响应式 ---------- */
 @media (max-width: 960px) {
